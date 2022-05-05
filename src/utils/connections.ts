@@ -1,3 +1,4 @@
+import { number } from "yup"
 
 
 
@@ -27,9 +28,6 @@ class Connections<K, V> {
 
 
 }
-
-// Connections<number, number> = new Connections()
-
 
 
 export default Connections
