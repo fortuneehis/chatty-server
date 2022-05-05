@@ -32,7 +32,8 @@ userController.authenticateUser
 
 userRouter.post("/uploads/profile",
 authMiddleware,
-profileImageUploader.single('profileImage'))
+profileImageUploader.single('profileImage'),
+userController.uploadProfileImage)
 
 userRouter.post("/logout",
 authMiddleware)
