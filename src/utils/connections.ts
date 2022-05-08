@@ -1,5 +1,3 @@
-import { number } from "yup"
-
 
 
 class Connections<K, V> {
@@ -20,6 +18,7 @@ class Connections<K, V> {
 
     keys(): K[] {
         return Array.from(this.activeConnections.keys())
+
     }
 
     remove(key: K): void {
@@ -29,5 +28,6 @@ class Connections<K, V> {
 
 }
 
+const connection = new Connections<number, string>()
 
-export default Connections
+export default connection

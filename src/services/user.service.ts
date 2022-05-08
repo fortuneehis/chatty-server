@@ -2,13 +2,10 @@ import prismaClient from "../db"
 import CustomError from "../utils/error"
 import config from "../utils/config"
 import { User } from "../dtos"
-import * as dotEnv from "dotenv"
 import { comparePassword, generateJWT, hashPassword } from "../utils/user"
 
-dotEnv.config()
 
-
-export const createUser = async (user: Pick<User, "username"|"password">) => {
+export const createUser = async (user: Pick<User, "username"|"password"|"profileImgUrl">): Promise<[boolean|null, unknown]> => {
     try {
 
         if(await usernameExists(user.username)) {
@@ -19,7 +16,7 @@ export const createUser = async (user: Pick<User, "username"|"password">) => {
             data: {
                 username: user.username,
                 password: await hashPassword(user.password, 10),
-                profileImgUrl: ""
+                profileImgUrl: user.profileImgUrl 
             }
         })
 
@@ -29,7 +26,7 @@ export const createUser = async (user: Pick<User, "username"|"password">) => {
     }
 }
 
-export const authenticateUser = async({username, password}: Pick<User, "username"|"password">) => {
+export const authenticateUser = async({username, password}: Pick<User, "username"|"password">): Promise<[string|null, unknown]> => {
     try {
         const user = await prismaClient.user.findUnique({
             where: {
@@ -41,14 +38,15 @@ export const authenticateUser = async({username, password}: Pick<User, "username
             throw new CustomError("Invalid Credentials", "The username or password does not match our records!", 401)
         }
 
-        
 
         const authToken = generateJWT(user, config.JWT_SECRET ,{
             jwtOptions: {
                 expiresIn: "7d"
             },
             omit: [
-                "password"
+                "password",
+                "createdAt",
+                "updatedAt"
             ]
         })
 
@@ -60,7 +58,7 @@ export const authenticateUser = async({username, password}: Pick<User, "username
 }
 
 
-const usernameExists = async (username: string) => {
+const usernameExists = async (username: string): Promise<boolean> => {
    const exists = await prismaClient.user.findUnique({
        where: {
            username

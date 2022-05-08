@@ -1,19 +1,17 @@
 //register user + upload profile pic
-//login user
-//UPDATE: upload user profile pic
-//UPDATE: credentials
 
+import { randomUUID } from "crypto";
 import { Router } from "express";
-import { object, string } from "yup";
 import { userController } from "../controllers";
-import { authMiddleware, requestValidator } from "../middlewares";
+import { authMiddleware, fileUploader, requestValidator } from "../middlewares";
 import { userSchema } from "../schema";
-import { profileImageUploader } from "../utils/fileUpload";
-
 
 
 const userRouter = Router()
 
+const profileImageUploader = fileUploader(`voiceMessage-${randomUUID()}-${Date.now()}`,
+["image/jpeg, image/png"],
+__dirname,"/uploads/voice").single('profileImage')
 
 userRouter.post("/",
 requestValidator(userSchema.createUserSchema),
@@ -21,7 +19,8 @@ userController.createUser)
 
 
 userRouter.get("/",
-authMiddleware)
+authMiddleware,
+userController.authenticatedUser)
 
 userRouter.patch("/",
 authMiddleware)
@@ -32,7 +31,7 @@ userController.authenticateUser
 
 userRouter.post("/uploads/profile",
 authMiddleware,
-profileImageUploader.single('profileImage'),
+profileImageUploader,
 userController.uploadProfileImage)
 
 userRouter.post("/logout",

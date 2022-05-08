@@ -3,17 +3,16 @@ import { userService } from "../services";
 import CustomError from "../utils/error";
 
 
-
-
 export const createUser = async(req: Request, res: Response, next: NextFunction) => {
-    const { username, password} = req.body
-    const [_, error] = await userService.createUser({username, password}) 
+    const { username, password, profileImgUrl} = req.body
+    const [_, error] = await userService.createUser({username, password, profileImgUrl}) 
 
     if(error) {
         return next(error)
     }
 
     res.json({
+        success: true,
         message: "You account has been created!"
     })
 }
@@ -32,6 +31,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
     res.cookie("auth_token", authToken as string, {
         httpOnly: true
     }).json({
+        success: true,
         authToken
     })
 }
@@ -46,10 +46,22 @@ export const uploadProfileImage = (req: Request, res: Response, next: NextFuncti
     const file = req.file
     const protocol = req.protocol
     const host = req.get("host")
-    const filePath = `${protocol}:${host}/${file?.filename}`
+    const filePath = `${protocol}://${host}/${file?.filename}`
 
     res.json({
+        success: true,
         filePath
     })
 
+}
+
+export const authenticatedUser = (req: Request, res: Response, next: NextFunction) => {
+
+    //@ts-ignore
+    const user = req.user
+
+    res.json({
+        success: true,
+        user
+    })
 }

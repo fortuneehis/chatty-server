@@ -9,7 +9,7 @@ class CustomError extends Error {
     constructor(name: string, message: string, status: number, errors?: string[]) {
         super()
         this.name = name
-        this.message = message
+        this.message = status === 500 ? "" : message
         this.errors = errors
         this.status = status
     }

@@ -6,9 +6,10 @@ export const uploadVoiceMessage = (req: Request, res: Response, next: NextFuncti
     const file = req.file
     const protocol = req.protocol
     const host = req.get("host")
-    const filePath = `${protocol}:${host}/${file?.filename}`
+    const filePath = `${protocol}://${host}/${file?.filename}`
 
     res.json({
+        success: true,
         filePath
     })
 

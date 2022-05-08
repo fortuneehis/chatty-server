@@ -25,11 +25,14 @@ export const generateJWT = <T extends {}>(payload:T,secret: string, options: opt
     return token
 }
 
-export const verifyJWT = (token: string, secret: string) => {
+export const verifyJWT = <T>(token: string, secret: string): [T|null, unknown|null] => {
     try {
         const payload = jwt.verify(token, secret)
-        return [payload, null]
+        return [payload as T, null]
     } catch(err) {
+        if(err instanceof jwt.JsonWebTokenError) {
+            return [null, new CustomError(err.name, "Invalid token", 401)]
+        }
         if(err instanceof jwt.TokenExpiredError) {
             return [null, new CustomError(err.name, "This token has expired!", 401)]
         }

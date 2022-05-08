@@ -23,16 +23,19 @@ app.use(cors())
 app.use(compression())
 
 
+socketServer(IOServer)
+
+
 app.use("/users", userRouter)
 app.use("/chats", chatRouter)
 app.use("/messages", messageRouter)
 
-socketServer(IOServer)
 
 
 
 app.use("*",(req: Request, res: Response, next: NextFunction)=>{
     res.status(404).json({
+        success: false,
         name: "RouteNotFoundError",
         message: "This route does not exist!"
     })
@@ -40,12 +43,13 @@ app.use("*",(req: Request, res: Response, next: NextFunction)=>{
 
 app.use((error: ErrorRequestHandler&{status: number, message: string, errors: string[] }, req: Request, res: Response, next: NextFunction)=>{
     res.status(error.status ?? 500).json({
+        success: false,
         name: error.name,
         message: error.message,
         errors: error.errors
     })
 })
 
-app.listen(config.PORT || 5000, ()=>{
+httpServer.listen(config.PORT || 5000, ()=>{
     console.log("running...")
 })

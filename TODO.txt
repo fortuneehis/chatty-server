@@ -1,0 +1,7 @@
+TODO: set profileImgUrl to match link to an image
+
+TODO: add a lastActiveAt column to the user's table, this field will be optional and only updated when the user is going offline
+
+TODO: set profileImgUrl in prisma schema (User) to nullable, then migrate
+
+TODO: set Database(prisma) to accept emojis

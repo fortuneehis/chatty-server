@@ -1,14 +1,29 @@
 import {Server} from 'socket.io'
-import Connections from '../utils/connections'
-import { newMessageListener } from './listeners/messageListeners'
+import { User } from '../dtos'
+import config from '../utils/config'
+import CustomError from '../utils/error'
+import { verifyJWT } from '../utils/user'
+import listeners from './listeners'
 
-
-const connections = new Connections<number, string>()
 
 export default (io: Server)=> {
 
-    io.on("connection", socket=>{
-        newMessageListener(io, socket)
+    io.use((socket, next) => { 
+         const authToken = socket.handshake?.auth?.token
+
+         if(!authToken) {
+             return next(new CustomError("TokenNotFoundError", "The auth token is missing!", 401))
+         }
+         
+         const [user, error] = verifyJWT<User>(authToken, config.JWT_SECRET)
+
+         if(error) {
+            return next(error as Error)
+        }
+    })
+   
+    io.on("connection", socket=>{ 
+        listeners(io, socket)
     })
 
-}
+} 

@@ -1,9 +1,8 @@
 
-interface User {
+export default interface User {
     id: number
     username: string
     profileImgUrl: string
     password: string
 }
 
-export default User

@@ -1,7 +1,5 @@
-
 import { NextFunction, Request, Response } from "express"
 import {chatService} from "../services/index"
-
 
 export const getChats = async(req: Request, res: Response, next: NextFunction) => {
 
@@ -13,7 +11,8 @@ export const getChats = async(req: Request, res: Response, next: NextFunction) =
         return next(error)
     }
 
-    res.status(200).json({
+    res.json({
+        success: true,
         chats
     })
 }

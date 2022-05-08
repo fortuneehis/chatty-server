@@ -1,6 +1,7 @@
+import Message from "./message.dto";
 import User from "./user.dto";
 
-interface Chat {
+export default interface Chat {
     id: number,
     users?: User[],
     messages?: Message[]

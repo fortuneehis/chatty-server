@@ -1,14 +1,22 @@
 
 import prismaClient from "../db"
+import { User } from "../dtos"
+import { Chat }from "../dtos"
 import CustomError from "../utils/error"
 
-export const getChats = async(userId: number) => {
+export const getChats = async(userId: number): Promise<[{ user: User}[]|null, unknown]> => {
     try {
         const chats = await prismaClient.chat.findMany({
             include: {
                 users: {
                     select: {
-                        user: true,
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                profileImgUrl: true,
+                            }
+                        },
                     }
                 },
                
@@ -28,13 +36,13 @@ export const getChats = async(userId: number) => {
             return chat.users.find(user=> user.user.id != userId)
         })
 
-        return [filteredChat, null]
+        return [filteredChat as { user: User}[], null]
     } catch(err) {
         return [null, err]
     }
 }
 
-export const getChat = async(currentUserId: number, otherUserId: number) => {
+export const getChat = async(currentUserId: number, otherUserId: number): Promise<[Chat|null, unknown]> => {
     try {
 
         if(currentUserId === otherUserId) {
