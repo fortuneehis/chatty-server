@@ -45,6 +45,7 @@ model Message {
   chatId                Int
   messageType           MessageType   @default(TEXT)
   messageStatus         MessageStatus @default(SENT)
+  createdDate           DateTime      @default(now())
 }
 
 model ChatsUsers {
