@@ -46,6 +46,9 @@ model Message {
   messageType           MessageType   @default(TEXT)
   messageStatus         MessageStatus @default(SENT)
   createdDate           DateTime      @default(now())
+  parent  Message? @relation(name:"message",fields: [parentId], references: [id])
+  children Message[] @relation(name:"message")
+  parentId Int
 }
 
 model ChatsUsers {

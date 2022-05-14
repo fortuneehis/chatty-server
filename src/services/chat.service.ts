@@ -8,15 +8,25 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
     try {
         const chats = await prismaClient.chat.findMany({
             include: {
+                messages: {
+                    orderBy: {
+                        createdDate: "desc"
+                    },
+                    take: 1
+                  
+                },
                 users: {
                     select: {
+                        
                         user: {
+                            
                             select: {
                                 id: true,
                                 username: true,
                                 profileImgUrl: true,
                             }
                         },
+                        
                     }
                 },
                
@@ -33,12 +43,55 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
         })
 
         const filteredChat = chats.map(chat=> {
-            return chat.users.find(user=> user.user.id != userId)
+           return ({
+               id: chat.id,
+               recentMessage: chat.messages[0],
+               user: chat.users.find(user=> user.user.id != userId)
+           })
         })
 
-        return [filteredChat as { user: User}[], null]
+        return [filteredChat as any, null]
     } catch(err) {
         return [null, err]
+    }
+}
+
+export const addChat = async(currentUserId: number, otherUserId: number) => {
+    try {
+
+        if(currentUserId === otherUserId) {
+            throw new CustomError("ChatError", "Self chatting is not allowed!", 403)
+        }
+
+        const chat = await prismaClient.chat.create({
+            data: {
+                users: {
+                    create: [
+                        {
+                            user: {
+                                connect: {
+                                    id: currentUserId
+                                }
+                            }
+                        },
+                        {
+                            user: {
+                                connect: {
+                                    id: otherUserId
+                                }
+                            }
+                        }
+                    ]
+                    }
+                }
+        })
+
+        return [chat, null]
+
+    } catch(err: any) {
+
+        return [null, err]
+
     }
 }
 
@@ -70,36 +123,13 @@ export const getChat = async(currentUserId: number, otherUserId: number): Promis
                 }
             }
         })
-
-        if(!chat) {
-            const newChat = await prismaClient.chat.create({
-                data: {
-                    users: {
-                        create: [
-                            {
-                                user: {
-                                    connect: {
-                                        id: currentUserId
-                                    }
-                                }
-                            },
-                            {
-                                user: {
-                                    connect: {
-                                        id: otherUserId
-                                    }
-                                }
-                            }
-                        ]
-                        }
-                    }
-            })
-
-            chat = newChat
-        }
   
         return [chat, null]
+
     } catch(err: any) {
+
         return [null, err]
+        
     }
 }
+

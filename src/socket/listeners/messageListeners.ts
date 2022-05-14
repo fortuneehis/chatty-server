@@ -5,7 +5,9 @@ import { chatService, messageService } from "../../services";
 import connection from "../../utils/connections";
 import dataValidator from "../../utils/dataValidator";
 
-let count: number = 0
+
+
+
 const newMessageListener = (io: Server, socket: Socket) => {
     socket.on("new_message", async(data, fn)=> {
 
