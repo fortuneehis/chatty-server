@@ -21,11 +21,17 @@ enum MessageStatus {
   SEEN
 }
 
+enum UserStatus {
+  ONLINE
+  OFFLINE
+}
+
 model User {
   id            Int          @id @default(autoincrement())
   username      String       @unique
   profileImgUrl String
   password      String
+  status        UserStatus   @default(OFFLINE)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   lastActiveAt DateTime?

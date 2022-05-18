@@ -32,9 +32,9 @@ export const getMessages = async(chatId: number) => {
     try {
         //add createdAt column
         const messages = await prismaClient.message.groupBy({
-            by: ["chatId"], //change to createdAt
+            by: ["createdDate"], //change to createdAt
             orderBy: {
-               chatId: "asc"
+               createdDate: "asc"
             },
             where: {
                 chat: {

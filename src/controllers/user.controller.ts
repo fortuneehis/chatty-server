@@ -22,17 +22,17 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
 
     const { username, password } = req.body
 
-    const [authToken, error] = await userService.authenticateUser({username, password})
+    const [user, error] = await userService.authenticateUser({username, password})
 
-    if(error) {
+    if(error || !user) {
         return next(error)
     }
 
-    res.cookie("auth_token", authToken as string, {
+    res.cookie("auth_token", user?.authToken as string, {
         httpOnly: true
     }).json({
         success: true,
-        authToken
+        user
     })
 }
 

@@ -123,6 +123,7 @@ export const getChat = async(currentUserId: number, otherUserId: number): Promis
                 }
             }
         })
+
   
         return [chat, null]
 

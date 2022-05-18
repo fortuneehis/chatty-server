@@ -1,5 +1,3 @@
-//register user + upload profile pic
-
 import { randomUUID } from "crypto";
 import { Router } from "express";
 import { userController } from "../controllers";

@@ -1,43 +1,83 @@
 import {Server} from 'socket.io'
-import { User } from '../dtos'
+import { userService } from '../services'
 import config from '../utils/config'
 import connection from '../utils/connections'
-import CustomError from '../utils/error'
 import { verifyJWT } from '../utils/user'
+import { ErrorEvents, userEvents } from './events'
 import listeners from './listeners'
 
 
 export default (io: Server)=> {
 
-    io.use((socket, next) => { 
-         const authToken = socket.handshake?.auth?.token
+    io.use(async(socket, next)=>{
 
-         if(!authToken) {
-             return next(new CustomError("TokenNotFoundError", "The auth token is missing!", 401))
-         }
-         
-         const [user, error] = verifyJWT<User>(authToken, config.JWT_SECRET)
+        const authToken = socket.handshake.auth?.token
 
-         if(error) {
+        const [user, error] =  verifyJWT(authToken as string, config.JWT_SECRET)
+
+        if(error) {
             return next(error as Error)
         }
 
         //@ts-ignore
         socket.request.user = user
-    })
-   
-    io.on("connection", socket=>{ 
-        //@ts-ignore
-        connection.add(socket.request.user.id, socket.id)
-        listeners(io, socket)
 
-        socket.on("disconnect", ()=> {
-            //@ts-ignore
-            if(connection.exists(socket.request.user.id)) {
-                //@ts-ignore
-                connection.remove(socket.request.user.id)
+        next()
+    })
+
+    io.on("connection", async(socket)=>{ 
+
+        //@ts-ignore
+        const user = socket.request.user
+
+        connection.add(user.id, socket.id)
+
+        const [status, statusError] = await userService.setUserStatus(user.id, "ONLINE")
+
+        if(statusError) {
+            ErrorEvents.AppErrorEmitter(socket, statusError)
+        }
+
+        userEvents.userStatusEmitter(user.id, io, status)
+
+        const [users, activeUsersError] = await userService.fetchUsers(connection.keys())
+
+        if(activeUsersError) {
+            ErrorEvents.AppErrorEmitter(socket, activeUsersError)
+        }
+    
+        userEvents.activeUsersEmitter(socket, users)
+
+        console.log("connected")
+      
+
+        listeners(io, socket)
+    
+        socket.on("disconnect", async()=> {
+            console.log("disconnected!")
+
+            if(connection.exists(user.id)) {
+
+                connection.remove(user.id)
+
+                const [status, statusError] = await userService.setUserStatus(user.id, "OFFLINE")
+
+                if(statusError) {
+                    ErrorEvents.AppErrorEmitter(socket, statusError)
+                }
+
+                userEvents.userStatusEmitter(user.id, io, status)
+
+                const [users, activeUsersError] = await userService.fetchUsers(connection.keys())
+
+                if(activeUsersError) {
+                    ErrorEvents.AppErrorEmitter(socket, activeUsersError)
+                }
+                            
+                userEvents.activeUsersEmitter(socket, users)
+
             }
-            //create an active users event and fetch active users based on their Id and send to client
+
         })
     })
 

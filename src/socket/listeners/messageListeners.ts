@@ -1,14 +1,16 @@
-import { Chat, Message } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { newMessageSchema } from "../../schema/socket/message.schema";
 import { chatService, messageService } from "../../services";
 import connection from "../../utils/connections";
 import dataValidator from "../../utils/dataValidator";
+import { ErrorEvents } from "../events";
 
 
 
 
 const newMessageListener = (io: Server, socket: Socket) => {
+    //@ts-ignore
+    const user = socket.request.user
     socket.on("new_message", async(data, fn)=> {
 
         const [_, error ] = await dataValidator(newMessageSchema, data)
@@ -22,29 +24,34 @@ const newMessageListener = (io: Server, socket: Socket) => {
         }
 
         //first check if sender and receiver exists
-        const [chat, chatError] = await chatService.getChat(data.senderId, data.receiverId)
+        let [chat, chatError] = await chatService.getChat(user.id, data.receiverId)
 
-        if(chatError || !chat) {
-            return fn({
-                 success: false,
-                 ...chatError as Error
-             })
+        if(chatError) {
+            ErrorEvents.AppErrorEmitter(socket, chatError)
          }
+
+         if(!chat) {
+            const [newChat, newChatError] = await chatService.addChat(user.id, data.receiverId)
+
+            if(newChatError) {
+                ErrorEvents.AppErrorEmitter(socket, newChatError)
+            }
+
+            chat = newChat
+        }
 
         
       
-        const [message, messageError] = await messageService.addMessage(chat.id,{
+        const [message, messageError] = await messageService.addMessage(chat?.id as number,{
           message: data.message,
           isVoiceMessage: data.isVoiceMessage,
           voiceMessageAudioPath: data.voiceMessageAudioPath,
-          senderId: data.senderId
+          senderId: user.id
         })
 
         if(messageError) {
-            return fn({
-                 success: false,
-                 ...messageError as Error
-             })
+            return ErrorEvents.AppErrorEmitter(socket, messageError)
+            
          }
 
         fn(message)

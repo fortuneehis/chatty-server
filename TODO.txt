@@ -5,3 +5,5 @@ TODO: add a lastActiveAt column to the user's table, this field will be optional
 TODO: set profileImgUrl in prisma schema (User) to nullable, then migrate
 
 TODO: set Database(prisma) to accept emojis
+
+TODO: Migrate dev to match with DB schema

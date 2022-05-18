@@ -1,7 +1,3 @@
-
-
-//POST: upload voice message
-
 import { randomUUID } from "crypto";
 import { Router } from "express";
 import { messageController } from "../controllers";

@@ -4,5 +4,7 @@ export default interface User {
     username: string
     profileImgUrl: string
     password: string
+    status: string
+    lastActiveAt: Date | null
 }
 
