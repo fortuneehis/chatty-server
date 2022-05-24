@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import {randomUUID} from "crypto"
 import { Router } from "express";
 import { userController } from "../controllers";
 import { authMiddleware, fileUploader, requestValidator } from "../middlewares";
@@ -24,8 +24,13 @@ userRouter.patch("/",
 authMiddleware)
 
 userRouter.post("/authenticate",
-userController.authenticateUser
-)
+requestValidator(userSchema.authenticateUserSchema),
+userController.authenticateUser)
+
+userRouter.get("/:id", 
+requestValidator(userSchema.fetchUserSchema),
+authMiddleware, 
+userController.fetchUser)
 
 userRouter.post("/uploads/profile",
 authMiddleware,

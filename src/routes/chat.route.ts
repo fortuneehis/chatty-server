@@ -1,6 +1,5 @@
 
 
-//fetch chats by user id
 //fetch single chat
 
 import { Router } from "express";

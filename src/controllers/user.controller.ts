@@ -65,3 +65,18 @@ export const authenticatedUser = (req: Request, res: Response, next: NextFunctio
         user
     })
 }
+
+export const fetchUser = async(req: Request, res: Response, next: NextFunction) => {
+        const id = parseInt(req.params.id, 10)
+
+        const [user, error] = await userService.fetchUser(id)
+
+        if(error) {
+            return next(error)
+        }
+
+        res.json({
+            success: true,
+            user
+        })
+}

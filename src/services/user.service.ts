@@ -116,6 +116,25 @@ export const fetchUsers = async(userIds: number[]): Promise<[Omit<User, "lastAct
 
 }
 
+export const fetchUser = async(id: number) => {
+    try {
+        const user = await prismaClient.user.findUnique({
+            select: {
+                id: true,
+                username: true,
+                profileImgUrl: true,
+                status: true
+            },
+            where: {
+                id
+            }
+        })
+        return [user, null]
+    } catch(err) {
+        return [null, err]
+    }
+}
+
 
 const usernameExists = async (username: string): Promise<boolean> => {
    const exists = await prismaClient.user.findUnique({

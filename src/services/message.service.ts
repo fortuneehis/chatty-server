@@ -2,7 +2,7 @@ import { Message } from "../dtos"
 import prismaClient from "../db"
 
 
-export const addMessage = async(chatId: number, {message, senderId, voiceMessageAudioPath, isVoiceMessage}: Message): Promise<[Message|null, unknown]> => {
+export const addMessage = async(chatId: number, {message, senderId, voiceMessageAudioPath, isVoiceMessage}: Omit<Message, "id">): Promise<[Message|null, unknown]> => {
     try {
         const newMessage = await prismaClient.message.create({
             data: {
@@ -48,4 +48,22 @@ export const getMessages = async(chatId: number) => {
     } catch(err) {
         return [null, err]
     }
+}
+
+
+export const updateMessageStatus = async(messageId: number, status: "SENT"|"DELIVERED"|"SEEN") => {
+    try {
+        const message = await prismaClient.message.update({
+            data: {
+                messageStatus: status
+            }, 
+            where: {
+                id: messageId
+            }
+        })
+        return [message.messageStatus, null]
+    } catch(err) {
+        return [null, err]
+    }
+
 }

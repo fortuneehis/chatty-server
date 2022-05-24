@@ -8,9 +8,6 @@
     "dev": "./node_modules/.bin/nodemon --exec ./node_modules/.bin/ts-node ./src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "prisma": {
-    "seed": "node ./src/db/seeds/index.ts"
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {

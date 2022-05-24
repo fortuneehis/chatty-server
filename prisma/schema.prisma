@@ -54,7 +54,7 @@ model Message {
   createdDate           DateTime      @default(now())
   parent  Message? @relation(name:"message",fields: [parentId], references: [id])
   children Message[] @relation(name:"message")
-  parentId Int
+  parentId Int?
 }
 
 model ChatsUsers {
