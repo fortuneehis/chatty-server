@@ -13,14 +13,11 @@ const newMessageListener = (io: Server, socket: Socket) => {
     const user = socket.request.user
     socket.on("new_message", async(data, fn)=> {
 
-        const [_, error ] = await dataValidator(newMessageSchema, data)
+        const [_, validationError ] = await dataValidator(newMessageSchema, data)
 
 
-        if(error) {
-           return fn({
-                success: false,
-                ...error as Error
-            })
+        if(validationError) {
+            ErrorEvents.AppErrorEmitter(socket, validationError)
         }
 
         //first check if sender and receiver exists
@@ -63,9 +60,7 @@ const newMessageListener = (io: Server, socket: Socket) => {
             return ErrorEvents.AppErrorEmitter(socket, chatDataError)
         }
 
-        console.log(chatData)
-
-        socket.emit(`chats`, chatData)
+        socket.emit("chats", chatData)
 
         if(connection.exists(data.receiverId)) {
             const [chatData, chatDataError] = await chatService.getChat(chat.id, data.receiverId) as [any, unknown]
@@ -73,7 +68,7 @@ const newMessageListener = (io: Server, socket: Socket) => {
             if(chatDataError) {
                 return ErrorEvents.AppErrorEmitter(socket, chatDataError)
             }
-            io.to(connection.find(data.receiverId) as string).emit(`chats`, chatData)
+            io.to(connection.find(data.receiverId) as string).emit("chats", chatData)
             if(io.to(connection.find(data.receiverId) as string).emit("new_message",message)) {
                 //update message status to delivered
                 const [messageStatus, messageStatusError] = await messageService.updateMessageStatus(message?.id as number, "DELIVERED")
