@@ -9,5 +9,5 @@ export const userStatusEmitter = <T = {}>(userId: number, io: Server, payload: T
 }
 
 export const activeUsersEmitter = <T = []>(socket: Socket, payload: T) => {
-    socket.broadcast.emit("active_users", payload)
+    socket.emit("active_users", payload)
 }

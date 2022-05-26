@@ -3,8 +3,9 @@ import CustomError from "../utils/error";
 import config from "../utils/config"
 import { verifyJWT } from "../utils/user";
 import { User } from "../dtos";
+import { userService } from "../services";
 
-const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = async(req: Request, res: Response, next: NextFunction) => {
 
     const token = req.cookies.auth_token || req.headers?.authorization?.split(" ")[1]
 
@@ -13,10 +14,16 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
             
     }
 
-    const [user, error] = verifyJWT<User>(token, config.JWT_SECRET)
+    const [userId, jwtError] = verifyJWT<Pick<User, "id">>(token, config.JWT_SECRET)
 
-    if(error) {
-        return next(error)
+    if(jwtError) {
+        return next(jwtError)
+    }
+
+    const [user, userError] = await userService.fetchUser(userId?.id as number)
+
+    if(userError) {
+        return next(userError)
     }
 
     //@ts-ignore

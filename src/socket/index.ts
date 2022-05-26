@@ -13,10 +13,16 @@ export default (io: Server)=> {
 
         const authToken = socket.handshake.auth?.token
 
-        const [user, error] =  verifyJWT(authToken as string, config.JWT_SECRET)
+        const [userId, jwtError] =  verifyJWT<{id: number}>(authToken as string, config.JWT_SECRET)
 
-        if(error) {
-            return next(error as Error)
+        if(jwtError) {
+            return next(jwtError as Error)
+        }
+
+        const [user, userError] = await userService.fetchUser(userId?.id as number)
+
+        if(userError) {
+            return next(userError as Error)
         }
 
         //@ts-ignore

@@ -39,13 +39,25 @@ const newMessageListener = (io: Server, socket: Socket) => {
             
         }
 
+        let parentMessageId = null
+
+        if(data.parentId) {
+            const [parentMessage, parentMessageError] = await messageService.getMessage(data.parentId)
+
+            if(parentMessageError) {
+                ErrorEvents.AppErrorEmitter(socket, parentMessageError)
+            }
+
+            parentMessageId = parentMessage?.id
+        }
         
       
         const [message, messageError] = await messageService.addMessage(chat.id as number,{
           message: data.message,
           isVoiceMessage: data.isVoiceMessage,
           voiceMessageAudioPath: data.voiceMessageAudioPath,
-          senderId: user.id
+          senderId: user.id,
+          parentId: parentMessageId
         })
 
         if(messageError) {

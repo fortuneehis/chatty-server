@@ -80,3 +80,26 @@ export const fetchUser = async(req: Request, res: Response, next: NextFunction) 
             user
         })
 }
+
+export const searchUsers = async(req: Request, res: Response, next: NextFunction) => {
+    const username = req.query.username
+
+    if(!username) {
+        return res.json({
+            success: true,
+            users: []
+        })
+    }
+
+    const [users, error] = await userService.searchUser(username as string)
+
+    if(error) {
+        return next(error)
+    }
+
+    res.json({
+        success: true,
+        users
+    })
+}
+ 

@@ -12,6 +12,16 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
             },
             include: {
                 messages: {
+                    select: {
+                        message: true,
+                        messageStatus: true,
+                        createdDate: true,
+                        sender: {
+                            select: {
+                                id: true
+                            }
+                        }
+                    },
                     orderBy: {
                         createdDate: "desc"
                     },
@@ -50,7 +60,7 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
            return ({
                id: chat.id,
                recentMessage: chat.messages[0],
-               user: chat.users.filter(user=> user.user.id != userId)[0]
+               user: chat.users.find(user=> user.user.id != userId)
            })
         })
 
@@ -135,6 +145,16 @@ export const getChat = async(chatId: number, userId: number) => {
         const chat = await prismaClient.chat.findFirst({
             include: {
                 messages: {
+                    select: {
+                        message: true,
+                        messageStatus: true,
+                        createdDate: true,
+                        sender: {
+                            select: {
+                                id: true
+                            }
+                        }
+                    },
                     orderBy: {
                         createdDate: "desc"
                     },
@@ -193,8 +213,35 @@ export const getChatDetails = async(currentUserId: number, otherUserId: number):
 
 
         let chat = await prismaClient.chat.findFirst({
-            include: {
+            select: {
                 messages: {
+                    select: {
+                        id: true,
+                        message: true,
+                        messageStatus: true,
+                        isVoiceMessage: true,
+                        voiceMessageAudioPath: true,
+                        createdDate: true,
+                        parent: {
+                            select: {
+                                id: true,
+                                isVoiceMessage: true,
+                                message: true,
+                                sender: {
+                                    select: {
+                                        id: true,
+                                        username: true
+                                    }
+                                }
+                            }
+                        },
+                        sender: {
+                            select: {
+                                id: true,
+                                username: true
+                            }
+                        }
+                    } ,
                     orderBy: {
                         createdDate: "asc",
                         

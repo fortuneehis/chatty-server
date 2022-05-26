@@ -27,10 +27,10 @@ userRouter.post("/authenticate",
 requestValidator(userSchema.authenticateUserSchema),
 userController.authenticateUser)
 
-userRouter.get("/:id", 
-requestValidator(userSchema.fetchUserSchema),
+userRouter.get("/search", 
+requestValidator(userSchema.searchUsersSchema), 
 authMiddleware, 
-userController.fetchUser)
+userController.searchUsers)
 
 userRouter.post("/uploads/profile",
 authMiddleware,
@@ -39,5 +39,13 @@ userController.uploadProfileImage)
 
 userRouter.post("/logout",
 authMiddleware)
+
+userRouter.get("/:id", 
+requestValidator(userSchema.fetchUsersSchema),
+authMiddleware, 
+userController.fetchUser)
+
+
+
 
 export default userRouter

@@ -4,7 +4,7 @@ declare namespace Express {
             data: {
                 id: number,
                 username: string,
-                profileImgUrl?: string,
+                profileImgUrl: string|null,
                 authToken: string
             }
         }

@@ -29,12 +29,12 @@ enum UserStatus {
 model User {
   id            Int          @id @default(autoincrement())
   username      String       @unique
-  profileImgUrl String
+  profileImgUrl String?
   password      String
   status        UserStatus   @default(OFFLINE)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  lastActiveAt DateTime?
+  lastActiveAt  DateTime?
   chats         ChatsUsers[]
   messages      Message[]
 
@@ -42,7 +42,7 @@ model User {
 
 model Message {
   id                    Int           @id @default(autoincrement())
-  message               String
+  message               String        @db.LongText
   voiceMessageAudioPath String?
   isVoiceMessage        Boolean       @default(false)
   sender                User          @relation(fields: [senderId], references: [id])
@@ -52,16 +52,17 @@ model Message {
   messageType           MessageType   @default(TEXT)
   messageStatus         MessageStatus @default(SENT)
   createdDate           DateTime      @default(now())
-  parent  Message? @relation(name:"message",fields: [parentId], references: [id])
-  children Message[] @relation(name:"message")
-  parentId Int?
+  parent                Message?      @relation(name: "message", fields: [parentId], references: [id])
+  children              Message[]     @relation(name: "message")
+  parentId              Int?
 }
 
 model ChatsUsers {
-  user   User @relation(fields: [userId], references: [id])
-  userId Int
-  chat   Chat @relation(fields: [chatId], references: [id])
-  chatId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  chatId    Int
+  createdAt DateTime @default(now())
 
   @@id([userId, chatId])
 }

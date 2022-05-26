@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `ChatsUsers` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
+
+-- AlterTable
+ALTER TABLE `User` MODIFY `profileImgUrl` VARCHAR(191) NULL;

@@ -2,12 +2,44 @@ import { Message } from "../dtos"
 import prismaClient from "../db"
 
 
-export const addMessage = async(chatId: number, {message, senderId, voiceMessageAudioPath, isVoiceMessage}: Omit<Message, "id">): Promise<[Message|null, unknown]> => {
+export const addMessage = async(chatId: number, {message, senderId, voiceMessageAudioPath, isVoiceMessage, parentId}: Omit<Message, "id">): Promise<[any|null, unknown]> => {
     try {
         const newMessage = await prismaClient.message.create({
+            select: {
+                id: true,
+                message: true,
+                messageStatus: true,
+                isVoiceMessage: true,
+                voiceMessageAudioPath: true,
+                createdDate: true,
+                parent: {
+                    select: {
+                        id: true,
+                        isVoiceMessage: true,
+                        message: true,
+                        sender: {
+                            select: {
+                                id: true,
+                                username: true
+                            }
+                        }
+                    }
+                },
+                sender: {
+                    select: {
+                        id: true,
+                        username: true
+                    }
+                }
+            } ,
             data: {
                 isVoiceMessage:  isVoiceMessage,
                 voiceMessageAudioPath: isVoiceMessage ? voiceMessageAudioPath : undefined,
+                parent: parentId ? {
+                    connect: {
+                        id: parentId as number
+                    }
+                } : undefined,
                 message,
                 sender: {
                     connect: {
@@ -28,27 +60,28 @@ export const addMessage = async(chatId: number, {message, senderId, voiceMessage
     }
 }
 
-export const getMessages = async(chatId: number) => {
+
+export const getMessage = async(messageId: number): Promise<[{id: number}|null, unknown]> => {
     try {
-        //add createdAt column
-        const messages = await prismaClient.message.groupBy({
-            by: ["createdDate"], //change to createdAt
-            orderBy: {
-               createdDate: "asc"
+ 
+        const message = await prismaClient.message.findUnique({
+            select: {
+                id: true
             },
             where: {
-                chat: {
-                    id: chatId
-                }
+                id: messageId
             }
         })
 
-        return [messages, null]
+        return [message, null]
 
     } catch(err) {
         return [null, err]
     }
 }
+
+
+
 
 
 export const updateMessageStatus = async(messageId: number, status: "SENT"|"DELIVERED"|"SEEN") => {

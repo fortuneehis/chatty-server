@@ -16,8 +16,8 @@ export const createUser = async ({username, password, profileImgUrl}: Pick<User,
         await prismaClient.user.create({
             data: {
                 username: username,
-                password: await hashPassword(password, 10),
-                profileImgUrl: profileImgUrl ?? ""
+                password: await hashPassword(password as string, 10),
+                profileImgUrl: profileImgUrl || undefined
             }
         })
 
@@ -33,7 +33,7 @@ export const authenticateUser = async({username, password}: Pick<User, "username
             select: {
                 id: true,
                 username: true,
-                profileImgUrl: true,
+                profileImgUrl: true, 
                 status: true,
                 lastActiveAt: true,
                 password: true
@@ -43,24 +43,17 @@ export const authenticateUser = async({username, password}: Pick<User, "username
             }
         })
     
-        if(!user || !await comparePassword(password, user.password)) {
+        if(!user || !await comparePassword(password as string, user.password)) {
             throw new CustomError("Invalid Credentials", "The username or password does not match our records!", 401)
         }
 
 
-        const authToken = generateJWT(user, config.JWT_SECRET ,{
+        const authToken = generateJWT({id: user.id}, config.JWT_SECRET ,{
             jwtOptions: {
                 expiresIn: "7d"
-            },
-            omit: [
-                "password",
-                "createdAt",
-                "updatedAt"
-            ]
+            }
         })
 
-        
-        
 
         return [{...omit(user, ["password"]), authToken}, null]   
 
@@ -116,7 +109,7 @@ export const fetchUsers = async(userIds: number[]): Promise<[Omit<User, "lastAct
 
 }
 
-export const fetchUser = async(id: number) => {
+export const fetchUser = async(id: number): Promise<[Pick<User, "id"|"username"|"profileImgUrl"|"status">|null, unknown]> => {
     try {
         const user = await prismaClient.user.findUnique({
             select: {
@@ -127,6 +120,27 @@ export const fetchUser = async(id: number) => {
             },
             where: {
                 id
+            }
+        })
+        return [user, null]
+    } catch(err) {
+        return [null, err]
+    }
+}
+
+export const searchUser = async(username: string) => {
+    try {
+        const user = await prismaClient.user.findMany({
+            select: {
+                id: true,
+                username: true,
+                profileImgUrl: true,
+                status: true
+            },
+            where: {
+                username: {
+                    contains: username
+                }
             }
         })
         return [user, null]

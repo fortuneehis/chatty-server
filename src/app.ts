@@ -56,7 +56,7 @@ app.use((error: ErrorRequestHandler&{status: number, message: string, errors: st
     res.status(error.status ?? 500).json({
         success: false,
         name: error.name,
-        message: error.message,
+        message: /*(!error.status || error.status === 500) ? "Something went wrong!" : */ error.message,
         errors: error.errors
     })
 })

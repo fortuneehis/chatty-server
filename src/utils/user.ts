@@ -4,7 +4,6 @@ import { omit, PropertyName } from "lodash"
 import CustomError from "./error"
 
 type options = {
-    omit: PropertyName[],
     jwtOptions?: jwt.SignOptions
 }
 
@@ -20,12 +19,12 @@ export const comparePassword = async(string:string, hash: string) => {
 
 
 export const generateJWT = <T extends {}>(payload:T,secret: string, options: options) => {
-     const token = jwt.sign(omit(payload, options.omit),secret,options.jwtOptions)
+     const token = jwt.sign(payload,secret,options.jwtOptions)
 
     return token
 }
 
-export const verifyJWT = <T>(token: string, secret: string): [T|null, unknown|null] => {
+export const verifyJWT = <T>(token: string, secret: string): [T|null, unknown] => {
     try {
         const payload = jwt.verify(token, secret)
         return [payload as T, null]
