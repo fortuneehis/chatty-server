@@ -8,14 +8,14 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
     try {
         const chats = await prismaClient.chat.findMany({
             orderBy: {
-                id: "desc"
+                updatedAt: "desc"
             },
             include: {
                 messages: {
                     select: {
                         message: true,
                         messageStatus: true,
-                        createdDate: true,
+                        createdAt: true,
                         sender: {
                             select: {
                                 id: true
@@ -23,7 +23,7 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
                         }
                     },
                     orderBy: {
-                        createdDate: "desc"
+                        createdAt: "desc"
                     },
                     take: 1
                   
@@ -37,6 +37,7 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
                                 id: true,
                                 username: true,
                                 profileImgUrl: true,
+                                status: true
                             }
                         },
                         
@@ -73,6 +74,12 @@ export const getChats = async(userId: number): Promise<[{ user: User}[]|null, un
 export const chatExists = async(currentUserId: number, otherUserId: number): Promise<[any, unknown]> => {
 
     try {
+
+        if(currentUserId === otherUserId) {
+            throw new CustomError("ChatError", "Self chatting is not allowed!", 403)
+        }
+
+        
         const chat = await prismaClient.chat.findFirst({
             where: {
                 users: {
@@ -140,15 +147,18 @@ export const addChat = async(currentUserId: number, otherUserId: number) => {
     }
 }
 
-export const getChat = async(chatId: number, userId: number) => {
+export const getRecentChat = async(chatId: number, userId: number) => {
     try {
-        const chat = await prismaClient.chat.findFirst({
+        const chat = await prismaClient.chat.update({
+            data: {
+                updatedAt: new Date()
+            },
             include: {
                 messages: {
                     select: {
                         message: true,
                         messageStatus: true,
-                        createdDate: true,
+                        createdAt: true,
                         sender: {
                             select: {
                                 id: true
@@ -156,7 +166,7 @@ export const getChat = async(chatId: number, userId: number) => {
                         }
                     },
                     orderBy: {
-                        createdDate: "desc"
+                        createdAt: "desc"
                     },
                     take: 1
                   
@@ -193,90 +203,4 @@ export const getChat = async(chatId: number, userId: number) => {
     }
 }
 
-
-export const getChatDetails = async(currentUserId: number, otherUserId: number): Promise<[any, unknown]> => {
-    try {
-
-        if(currentUserId === otherUserId) {
-            throw new CustomError("ChatError", "Self chatting is not allowed!", 403)
-        }
-
-        const [user, error] = await userService.fetchUser(otherUserId)
-
-        if(error) {
-            throw error
-        }
-
-        if(!user) {
-            throw new CustomError("UserNotFound", "User does not exist!", 404)
-        }
-
-
-        let chat = await prismaClient.chat.findFirst({
-            select: {
-                messages: {
-                    select: {
-                        id: true,
-                        message: true,
-                        messageStatus: true,
-                        isVoiceMessage: true,
-                        voiceMessageAudioPath: true,
-                        createdDate: true,
-                        parent: {
-                            select: {
-                                id: true,
-                                isVoiceMessage: true,
-                                message: true,
-                                sender: {
-                                    select: {
-                                        id: true,
-                                        username: true
-                                    }
-                                }
-                            }
-                        },
-                        sender: {
-                            select: {
-                                id: true,
-                                username: true
-                            }
-                        }
-                    } ,
-                    orderBy: {
-                        createdDate: "asc",
-                        
-                    },
-                }
-            },
-            where: {
-                users: {
-                    some: {
-                        user: {
-                            id: currentUserId
-                        }
-                    }
-                },
-                AND: {
-                    users: {
-                        some: {
-                            user: {
-                                id: otherUserId
-                            }
-                        }
-                    },
-                }
-            }
-        })
-
-  
-        return [{
-            user, chat
-        }, null]
-
-    } catch(err: any) {
-
-        return [null, err]
-        
-    }
-}
 

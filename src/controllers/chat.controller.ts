@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
-import {chatService} from "../services/index"
+import {chatService, messageService, userService} from "../services/index"
+import CustomError from "../utils/error"
 
 export const getChats = async(req: Request, res: Response, next: NextFunction) => {
 
@@ -7,15 +8,44 @@ export const getChats = async(req: Request, res: Response, next: NextFunction) =
     const { id } = req.user.data
 
     if(req.query.user_id) {
-        const [chat, error] = await chatService.getChatDetails(id, parseInt(req.query.user_id as string, 10))
+        const userId = req.query.user_id as string
+        const [user, userError] = await userService.fetchUser(parseInt(userId, 10))
 
-        if(error) {
-            return next(error)
+        if(userError) {
+            return next(userError)
         }
+
+        if(!user) {
+            throw new CustomError("UserNotFound", "User does not exist!", 404)
+        }
+
+        let [chat, chatError] = await chatService.chatExists(id, parseInt(req.query.user_id as string, 10))
+
+        if(chatError) {
+            return next(chatError)
+        }
+
+        if(chat) {
+            const [messages, messagesError] = await messageService.getMessages(chat.id)
+
+            if(messagesError) {
+                return next(messagesError)
+            }
+
+            chat = {
+                ...chat,
+                messages
+            }
+        }
+
+        
 
         return res.json({
             success: true,
-            chat
+            data: {
+                user,
+                chat
+            }
         })
 
     } 

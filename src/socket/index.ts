@@ -24,12 +24,13 @@ export default (io: Server)=> {
         if(userError) {
             return next(userError as Error)
         }
+        
 
         //@ts-ignore
         socket.request.user = user
 
         next()
-    })
+    }) 
 
     io.on("connection", async(socket)=>{ 
 

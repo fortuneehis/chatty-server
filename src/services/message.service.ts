@@ -11,7 +11,7 @@ export const addMessage = async(chatId: number, {message, senderId, voiceMessage
                 messageStatus: true,
                 isVoiceMessage: true,
                 voiceMessageAudioPath: true,
-                createdDate: true,
+                createdAt: true,
                 parent: {
                     select: {
                         id: true,
@@ -60,6 +60,55 @@ export const addMessage = async(chatId: number, {message, senderId, voiceMessage
     }
 }
 
+
+export const getMessages = async(chatId: number): Promise<[any|null, unknown]> => {
+    try {
+ 
+        const messages = await prismaClient.message.findMany({
+            select: {
+                id: true,
+                message: true,
+                messageStatus: true,
+                isVoiceMessage: true,
+                voiceMessageAudioPath: true,
+                createdAt: true,
+                parent: {
+                    select: {
+                        id: true,
+                        isVoiceMessage: true,
+                        message: true,
+                        sender: {
+                            select: {
+                                id: true,
+                                username: true
+                            }
+                        }
+                    }
+                },
+                sender: {
+                    select: {
+                        id: true,
+                        username: true
+                    }
+                }
+            } ,
+            orderBy: {
+                createdAt: "asc",
+                
+            },
+            where: {
+                chat: {
+                    id: chatId
+                }
+            }
+        })
+
+        return [messages, null]
+
+    } catch(err) {
+        return [null, err]
+    } 
+}
 
 export const getMessage = async(messageId: number): Promise<[{id: number}|null, unknown]> => {
     try {

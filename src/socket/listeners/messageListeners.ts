@@ -66,7 +66,7 @@ const newMessageListener = (io: Server, socket: Socket) => {
 
         fn(message)
 
-        const [chatData, chatDataError] = await chatService.getChat(chat.id, user.id) as [any, unknown]
+        const [chatData, chatDataError] = await chatService.getRecentChat(chat.id, user.id) as [any, unknown]
 
         if(chatDataError) {
             return ErrorEvents.AppErrorEmitter(socket, chatDataError)
@@ -75,7 +75,7 @@ const newMessageListener = (io: Server, socket: Socket) => {
         socket.emit("chats", chatData)
 
         if(connection.exists(data.receiverId)) {
-            const [chatData, chatDataError] = await chatService.getChat(chat.id, data.receiverId) as [any, unknown]
+            const [chatData, chatDataError] = await chatService.getRecentChat(chat.id, data.receiverId) as [any, unknown]
 
             if(chatDataError) {
                 return ErrorEvents.AppErrorEmitter(socket, chatDataError)
