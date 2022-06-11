@@ -5,8 +5,9 @@ import CustomError from "../utils/error";
 
 export const createUser = async(req: Request, res: Response, next: NextFunction) => {
     const { username, password, profileImgUrl} = req.body
+    console.log("from mobile")
     const [_, error] = await userService.createUser({username, password, profileImgUrl}) 
-
+    
     if(error) {
         return next(error)
     }
@@ -82,6 +83,8 @@ export const fetchUser = async(req: Request, res: Response, next: NextFunction) 
 }
 
 export const searchUsers = async(req: Request, res: Response, next: NextFunction) => {
+    //@ts-ignore
+    const currentUser = req.user.data
     const username = req.query.username
 
     if(!username) {
@@ -91,7 +94,7 @@ export const searchUsers = async(req: Request, res: Response, next: NextFunction
         })
     }
 
-    const [users, error] = await userService.searchUser(username as string)
+    const [users, error] = await userService.searchUser(username as string, currentUser.id)
 
     if(error) {
         return next(error)
@@ -100,6 +103,14 @@ export const searchUsers = async(req: Request, res: Response, next: NextFunction
     res.json({
         success: true,
         users
+    })
+}
+
+export const logoutCurrentUser = async(req: Request, res: Response, next: NextFunction) => {
+   
+    res.clearCookie("auth_token").json({
+        success: true,
+        message: "Logged out successfully"
     })
 }
  

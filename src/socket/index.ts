@@ -53,7 +53,7 @@ export default (io: Server)=> {
             ErrorEvents.AppErrorEmitter(socket, activeUsersError)
         }
     
-        userEvents.activeUsersEmitter(socket, users)
+        userEvents.activeUsersEmitter(io, users)
 
         console.log("connected")
       
@@ -67,7 +67,7 @@ export default (io: Server)=> {
 
                 connection.remove(user.id)
 
-                const [status, statusError] = await userService.setUserStatus(user.id, "OFFLINE")
+                const [status, statusError] = await userService.setUserStatus(user.id, "OFFLINE", true)
 
                 if(statusError) {
                     ErrorEvents.AppErrorEmitter(socket, statusError)
@@ -81,7 +81,7 @@ export default (io: Server)=> {
                     ErrorEvents.AppErrorEmitter(socket, activeUsersError)
                 }
                             
-                userEvents.activeUsersEmitter(socket, users)
+                userEvents.activeUsersEmitter(io, users)
 
             }
 

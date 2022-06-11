@@ -3,7 +3,7 @@ import { newMessageSchema } from "../../schema/socket/message.schema";
 import { chatService, messageService } from "../../services";
 import connection from "../../utils/connections";
 import dataValidator from "../../utils/dataValidator";
-import { ChatEvents, ErrorEvents } from "../events";
+import { ChatEvents, ErrorEvents, messageEvents } from "../events";
 
 
 
@@ -35,7 +35,9 @@ const newMessageListener = (io: Server, socket: Socket) => {
                 ErrorEvents.AppErrorEmitter(socket, newChatError)
             }
 
-            chat = newChat
+            chat = {
+                ...newChat
+            }
             
         }
 
@@ -66,26 +68,12 @@ const newMessageListener = (io: Server, socket: Socket) => {
 
         fn(message)
 
-        const [chatData, chatDataError] = await chatService.getRecentChat(chat.id, user.id) as [any, unknown]
-
-        if(chatDataError) {
-            return ErrorEvents.AppErrorEmitter(socket, chatDataError)
-        }
-
-        socket.emit("chats", chatData)
+        await ChatEvents.recentChatEmitter(socket, chat.id, user.id)
 
         if(connection.exists(data.receiverId)) {
-            const [chatData, chatDataError] = await chatService.getRecentChat(chat.id, data.receiverId) as [any, unknown]
-
-            if(chatDataError) {
-                return ErrorEvents.AppErrorEmitter(socket, chatDataError)
-            }
-            io.to(connection.find(data.receiverId) as string).emit("chats", chatData)
+            await ChatEvents.recentChatEmitter(io.to(connection.find(data.receiverId) as string), chat.id, data.receiverId)
             if(io.to(connection.find(data.receiverId) as string).emit("new_message",message)) {
-                //update message status to delivered
-                const [messageStatus, messageStatusError] = await messageService.updateMessageStatus(message?.id as number, "DELIVERED")
-                socket.emit(`message:${message?.id}`, messageStatus)
-                
+                await messageEvents.messageStatusEmitter(socket, message.id)      
             }
         }
 

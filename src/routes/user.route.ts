@@ -38,7 +38,8 @@ profileImageUploader,
 userController.uploadProfileImage)
 
 userRouter.post("/logout",
-authMiddleware)
+authMiddleware,
+userController.logoutCurrentUser)
 
 userRouter.get("/:id", 
 requestValidator(userSchema.fetchUsersSchema),

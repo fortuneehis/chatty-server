@@ -63,7 +63,7 @@ export const authenticateUser = async({username, password}: Pick<User, "username
 }
 
 
-export const setUserStatus = async(userId: number, status: "ONLINE"|"OFFLINE"): Promise<[string|null, unknown]> => {
+export const setUserStatus = async(userId: number, status: "ONLINE"|"OFFLINE", lastActivityDate?: boolean): Promise<[string|null, unknown]> => {
 
         try {
             const user = await prismaClient.user.update({
@@ -74,7 +74,8 @@ export const setUserStatus = async(userId: number, status: "ONLINE"|"OFFLINE"): 
                     id: userId
                 },
                 data: {
-                    status
+                    status,
+                    ...(lastActivityDate && {lastActiveAt: new Date()})
                 }
             })
 
@@ -109,14 +110,15 @@ export const fetchUsers = async(userIds: number[]): Promise<[Omit<User, "lastAct
 
 }
 
-export const fetchUser = async(id: number): Promise<[Pick<User, "id"|"username"|"profileImgUrl"|"status">|null, unknown]> => {
+export const fetchUser = async(id: number): Promise<[Pick<User, "id"|"username"|"profileImgUrl"|"status"|"lastActiveAt">|null, unknown]> => {
     try {
         const user = await prismaClient.user.findUnique({
             select: {
                 id: true,
                 username: true,
                 profileImgUrl: true,
-                status: true
+                status: true, 
+                lastActiveAt: true
             },
             where: {
                 id
@@ -128,7 +130,7 @@ export const fetchUser = async(id: number): Promise<[Pick<User, "id"|"username"|
     }
 }
 
-export const searchUser = async(username: string) => {
+export const searchUser = async(username: string, currentUserId: number) => {
     try {
         const user = await prismaClient.user.findMany({
             select: {
@@ -140,6 +142,11 @@ export const searchUser = async(username: string) => {
             where: {
                 username: {
                     contains: username
+                },
+                AND: {
+                    id: {
+                        not: currentUserId
+                    }
                 }
             }
         })

@@ -18,6 +18,11 @@ const IOServer = new Server(httpServer, {
         origin: config.APP_FRONTEND_URL
     }
 })
+
+app.use(cors({ 
+    credentials: true,
+    origin: config.APP_FRONTEND_URL as string
+}))
  
 app.use(express.json())
 app.use(express.urlencoded({
@@ -26,10 +31,7 @@ app.use(express.urlencoded({
 app.use(cookieParser())
 app.use(helmet())
 app.use(compression())
-app.use(cors({
-    credentials: true,
-    origin: config.APP_FRONTEND_URL
-}))
+
 
 app.use("/uploads",express.static(path.join(__dirname, "/uploads")))
 
@@ -53,6 +55,7 @@ app.use("*",(req: Request, res: Response, next: NextFunction)=>{
 })
 
 app.use((error: ErrorRequestHandler&{status: number, message: string, errors: string[] }, req: Request, res: Response, next: NextFunction)=>{
+    console.log(error)
     res.status(error.status ?? 500).json({
         success: false,
         name: error.name,
@@ -61,6 +64,6 @@ app.use((error: ErrorRequestHandler&{status: number, message: string, errors: st
     })
 })
 
-httpServer.listen(config.PORT || 5000, ()=>{
+httpServer.listen(config.PORT || 5000 , ()=>{
     console.log("running...")
 })

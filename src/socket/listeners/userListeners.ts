@@ -8,6 +8,16 @@ const userOnlineListener = (io: Server, socket: Socket) => {
 
 }
 
+const userTypingListener = (io: Server, socket: Socket) => {
+
+    // socket.on("user_typing", (userId: number)=>{
+    //     if(connection.exists(userId)) {
+    //         socket.broadcast.to(connection.find(userId) as string).emit("")
+    //     }  
+        
+    // })
+    
+}
 
 
 

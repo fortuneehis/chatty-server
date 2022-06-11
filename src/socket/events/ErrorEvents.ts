@@ -1,10 +1,11 @@
-import { Socket } from "socket.io"
+import { BroadcastOperator, Socket } from "socket.io"
+import { DefaultEventsMap } from "socket.io/dist/typed-events"
 
 
 
 
 
-export const AppErrorEmitter = (socket: Socket, error: any) => {
+export const AppErrorEmitter = (socket: Socket|BroadcastOperator<DefaultEventsMap, any>, error: any) => {
     socket.emit("app_error", {
         success: false,
         name: error.name,
